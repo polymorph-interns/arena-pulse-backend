@@ -4,6 +4,7 @@ import { Request, Response } from "express"
 import dotenv from "dotenv"
 import cors from "cors"
 import authRouter from "./routes/auth/authRoute"
+import { logger } from "./utils/logger"
 
 const app =express();
 
@@ -33,8 +34,8 @@ app.use("/v1/auth",authRouter);
 const MONGO_URI:string = process.env.MONGODB_URI as string;
 
 mongoose.connect(MONGO_URI)
-.then(()=>console.log("✅Connected to database"))
-.catch((err)=>console.log("🙆MongoDB Connection Error:", err));
+.then(()=>logger.info("✅Connected to database"))
+.catch((err)=>logger.error("🙆MongoDB Connection Error:", err));
 
 app.get("/",(req:Request, res:Response)=>
 {

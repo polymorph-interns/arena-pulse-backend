@@ -43,7 +43,7 @@ logUserIn:async(email:string, password:string)=>
       throw new Error("Invalid password")
     }
     const token = jwtUtils.generateToken(user._id as unknown as string)
-      return token
+      return {token, user: {firstName: user?.firstName, lastName: user?.lastName, email: user?.email}}
   } catch (error:any) {
     throw new Error(`An error occured while logging in: ${error.message}`)
   }
