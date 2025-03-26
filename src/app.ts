@@ -4,7 +4,9 @@ import { Request, Response } from "express"
 import dotenv from "dotenv"
 import cors from "cors"
 import authRouter from "./routes/auth/authRoute"
+import teamRouter from "./routes/teams/teamRoute"
 import { logger } from "./utils/logger"
+import { scheduleTeamUpdates } from "./jobs/updateCronJob"
 
 const app =express();
 
@@ -15,7 +17,7 @@ dotenv.config();
 //Configure the middleware
 app.use(
   express.json(),
-  cors()
+  // cors()
 ) 
 
 //CORS Middleware
@@ -29,6 +31,7 @@ app.use((req:Request, res:Response, next)=>
 
 //AuthRouter
 app.use("/v1/auth",authRouter);
+app.use("/v1/teams", teamRouter);
 //Connect to database
 
 const MONGO_URI:string = process.env.MONGODB_URI as string;
@@ -37,6 +40,8 @@ mongoose.connect(MONGO_URI)
 .then(()=>logger.info("✅Connected to database"))
 .catch((err)=>logger.error("🙆MongoDB Connection Error:", err));
 
+
+scheduleTeamUpdates();
 app.get("/",(req:Request, res:Response)=>
 {
   res.send("The arena-pulse-backend app is working");
