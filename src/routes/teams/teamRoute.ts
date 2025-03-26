@@ -1,11 +1,20 @@
-import express from 'express';
+import express,{Router} from 'express';
 import { Team } from '../../models/teamModel';
 import { updateAllTeams, getTeamWithStats } from '../../services/index';
 import { NBA_LEAGUE_ID,CURRENT_SEASON } from '../../constants';
 // import { getCurrentSeason } from '../../utils/seasonUtils';
 
-const teamRouter = express.Router();
+const teamRouter = Router();
 
+
+teamRouter.get("/", async (req, res) => {
+  try {
+    const teams = await Team.find({}).lean();
+    res.json(teams);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 // @ts-ignore
 teamRouter.get('/:id', async (req, res) => {
   try {
