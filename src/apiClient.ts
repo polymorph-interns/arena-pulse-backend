@@ -113,6 +113,7 @@ const createApiClient = (): AxiosInstance => {
       "x-rapidapi-host": "v1.basketball.api-sports.io",
       "x-rapidapi-key": APIKEY
     },
+    // @ts-ignore
     paramsSerializer: params => {
       return Object.entries(params)
         .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
