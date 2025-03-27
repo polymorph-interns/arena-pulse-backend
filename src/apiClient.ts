@@ -156,12 +156,16 @@ export const fetchTeamsByLeague = async (
 };
 
 export const fetchTeamStats = async (
-  teamId: string | number, 
-  leagueId: string | number = NBA_LEAGUE_ID, 
+  teamId: number , 
+  leagueId: string | number  = NBA_LEAGUE_ID, 
   season: string = CURRENT_SEASON
-): Promise<StatsResponse | null> => {
+) => {
   try {
-    const response = await apiClient.get<ApiResponse<StatsResponse>>("/statistics", {
+    const response = await axios.get("https://v1.basketball.api-sports.io/statistics", {
+      headers:{
+        "x-rapidapi-host": "v1.basketball.api-sports.io",
+        "x-rapidapi-key": process.env.BASKETBALL_API_KEY
+       },
       params: {
         team: teamId,
         league: leagueId,
@@ -178,4 +182,48 @@ export const fetchTeamStats = async (
     });
     throw error;
   }
+
+  
 };
+
+export const fetchGames = async (
+  teamId: number,
+  leagueId: string | number = NBA_LEAGUE_ID,
+  season: string = CURRENT_SEASON,
+  timezone: string = "America/New_York"
+) => {
+  try {
+    const response = await axios.get('https://v1.basketball.api-sports.io/games', {
+      headers: {
+        "x-rapidapi-host": "v1.basketball.api-sports.io",
+        "x-rapidapi-key": process.env.BASKETBALL_API_KEY
+      },
+      params: {
+        team: teamId,
+        league: leagueId,
+        season: season,
+        timezone: timezone  // Note lowercase 'z'
+      }
+    });
+    
+    // Add debug logging
+    logger.info('Games API response', {
+      url: response.config.url,
+      params: response.config.params,
+      dataCount: response.data.response?.length || 0
+    });
+    
+    return response.data.response;
+  } catch (error: any) {
+    logger.error("Error fetching games", {
+      error: error.message,
+      teamId,
+      leagueId,
+      season,
+      timezone,
+      // Include full error details if available
+      response: error.response?.data
+    });
+    throw error;
+  }
+}

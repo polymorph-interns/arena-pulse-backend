@@ -6,7 +6,9 @@ import {logger} from '../utils/logger';
 import { fetchTeamsByLeague, fetchTeamStats } from '../apiClient';
 import { UpSertTeam, UpsertTeamStats } from '../db';
 import { NBA_LEAGUE_ID, CURRENT_SEASON } from '../constants';
-
+import { Team } from '../models/teamModel';
+import {updateTeamGames} from "../services/"
+import Fixture from "../models/fixturesModel"
 
 interface Team {
   id: number;
@@ -76,4 +78,94 @@ export function scheduleTeamUpdates(): void {
   });
 
   logger.info('Team update jobs scheduled');
+}
+
+
+
+export function scheduleGameUpdates(): void {
+  // Update games daily at 4 AM ET
+  cron.schedule('0 4 * * *', async () => {
+    try {
+      // Get all teams that might have games
+      const teams = await Team.find().distinct('id');
+      
+      if (teams.length === 0) {
+        logger.info('No teams found for game updates');
+        return;
+      }
+
+      const results = [];
+      
+      for (const teamId of teams) {
+        try {
+          const updatedGames = await updateTeamGames(teamId);
+          results.push({
+            teamId,
+            success: true,
+            gamesUpdated: updatedGames.length
+          });
+          
+          // Rate limiting
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (error) {
+          results.push({
+            teamId,
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      logger.info(`Game update completed. Updated games for ${results.filter(r => r.success).length} teams`);
+    } catch (error: any) {
+      logger.error('Daily game update failed:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "America/New_York"
+  });
+
+  // Update live games every 15 seconds (matching API update frequency)
+  cron.schedule('*/15 * * * * *', async () => {
+    try {
+      // Find games that are in progress
+      const liveStatuses = ['Q1', 'Q2', 'Q3', 'Q4', 'OT', 'BT', 'HT'];
+      const liveGames = await Fixture.find({
+        'status.short': { $in: liveStatuses }
+      }).distinct('teams.home.id');
+
+      const uniqueTeamIds = [...new Set(liveGames)];
+      
+      if (uniqueTeamIds.length === 0) {
+        return;
+      }
+
+      const results = [];
+    
+      for (const teamId of uniqueTeamIds) {
+        try {
+            // @ts-ignore
+          const updatedGames = await updateTeamGames(teamId);
+          results.push({
+            teamId,
+            success: true,
+            gamesUpdated: updatedGames.length
+          });
+        } catch (error) {
+          results.push({
+            teamId,
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      logger.info(`Live game update completed. Updated ${results.filter(r => r.success).length} teams`);
+    } catch (error: any) {
+      logger.error('Live game update failed:', error);
+    }
+  });
+
+  logger.info('Game update jobs scheduled');
 }

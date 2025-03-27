@@ -7,7 +7,7 @@ interface FixturesTypes {
   timestamp: number;
   timezone: string;
   stage: string | null;
-  week: number | null;
+  week: string |  number | null;
   venue: string | null;
   status: {
     long: string;
@@ -66,7 +66,7 @@ const FixtureSchema = new Schema<FixturesTypes>({
   timestamp: { type: Number, required: true },
   timezone: { type: String, required: true },
   stage: { type: String, default: null },
-  week: { type: Number, default: null },
+  week: { type: Schema.Types.Mixed, default: null },
   venue: { type: String, default: null },
   status: {
     long: { type: String, required: true },

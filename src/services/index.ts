@@ -1,10 +1,10 @@
 import { Team } from "../models/teamModel";
-import { fetchTeamsByLeague, fetchTeamStats } from "../apiClient";
+import { fetchGames, fetchTeamsByLeague, fetchTeamStats } from "../apiClient";
 import { UpSertTeam, UpsertTeamStats} from "../db";
 import { logger } from "../utils/logger";
 import { TeamResponse } from "../apiClient";
-const NBA_LEAGUE_ID = "12";
-
+import {CURRENT_SEASON, NBA_LEAGUE_ID} from "../constants";
+import  Fixture from "../models/fixturesModel";
 export const getTeamWithStats = async (
   teamId: number,
   season: string,
@@ -78,6 +78,74 @@ export const updateAllTeams = async (
     return results as { teamId: number; success: boolean; teamName?: string; statsUpdated?: boolean; error?: string }[];
   } catch (error:any) {
     logger.error('Failed to update teams:', error);
+    throw error;
+  }
+};
+
+
+
+
+
+
+
+export const updateTeamGames = async (
+  teamId: number,
+  // leagueId: string | number = NBA_LEAGUE_ID,
+  // season: string = CURRENT_SEASON,
+  // timezone: string = "America/New_York"
+) => {
+  try {
+    logger.info(`Fetching games for team ${teamId}`);
+    const games = await fetchGames(teamId);
+    
+    console.log('Raw API response:', JSON.stringify(games, null, 2)); // Add this line
+    
+    if (!games || games.length === 0) {
+      logger.info(`No games found for team ${teamId}`);
+      return [];
+    }
+// @ts-ignore
+    const updatePromises = games.map(game => 
+      Fixture.findOneAndUpdate(
+        { id: game.id },
+        game,
+        { upsert: true, new: true }
+      ).lean()
+    );
+
+    const updatedGames = await Promise.all(updatePromises);
+    logger.info(`Updated ${updatedGames.length} games for team ${teamId}`);
+    return updatedGames;
+  } catch (error: any) {
+    logger.error(`Error updating games for team ${teamId}`, {
+      error: error.message,
+      teamId,
+    });
+    throw error;
+  }
+};
+
+export const getTeamGames = async (
+  teamId: number,
+  leagueId: string | number = NBA_LEAGUE_ID,
+  season: string = CURRENT_SEASON
+) => {
+  try {
+    return await Fixture.find({
+      $or: [
+        { "teams.home.id": teamId },
+        { "teams.away.id": teamId }
+      ],
+      "league.id": leagueId,
+      "league.season": season
+    }).sort({ timestamp: 1 }).lean();
+  } catch (error: any) {
+    logger.error(`Error fetching games for team ${teamId}`, {
+      error: error.message,
+      teamId,
+      leagueId,
+      season
+    });
     throw error;
   }
 };

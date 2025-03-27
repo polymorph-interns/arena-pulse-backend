@@ -6,7 +6,8 @@ import cors from "cors"
 import authRouter from "./routes/auth/authRoute"
 import teamRouter from "./routes/teams/teamRoute"
 import { logger } from "./utils/logger"
-import { scheduleTeamUpdates } from "./jobs/updateCronJob"
+import { scheduleTeamUpdates, scheduleGameUpdates } from "./jobs/updateCronJob"
+import gameRouter from "./routes/fixtures/fixturesRoute"
 
 const app =express();
 
@@ -32,6 +33,7 @@ app.use((req:Request, res:Response, next)=>
 //AuthRouter
 app.use("/v1/auth",authRouter);
 app.use("/v1/teams", teamRouter);
+app.use("/v1/games", gameRouter)
 //Connect to database
 
 const MONGO_URI:string = process.env.MONGODB_URI as string;
@@ -42,6 +44,7 @@ mongoose.connect(MONGO_URI)
 
 
 scheduleTeamUpdates();
+scheduleGameUpdates();
 app.get("/",(req:Request, res:Response)=>
 {
   res.send("The arena-pulse-backend app is working");
