@@ -125,7 +125,6 @@ export function scheduleGameUpdates(): void {
     timezone: "America/New_York"
   });
 
-  // Update live games every 15 seconds (matching API update frequency)
   cron.schedule('*/15 * * * * *', async () => {
     try {
       // Find games that are in progress
