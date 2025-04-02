@@ -35,13 +35,13 @@ export interface ITeamStats extends Document {
   teamId: number;
   leagueId: number;
   season: string;
-  league: {
-    id: number;
-    name: string;
-    type: string;
-    season: string;
-    logo: string | null;
-  };
+  // league: {
+  //   id: number;
+  //   name: string;
+  //   type: string;
+  //   season: string;
+  //   logo: string | null;
+  // };
   country: {
     id: number;
     name: string;
@@ -122,13 +122,13 @@ const teamStatsSchema = new Schema<ITeamStats>({
   teamId: { type: Number, index: true },
   leagueId: { type: Number, index: true },
   season: String,
-  league: {
-    id: Number,
-    name: String,
-    type: String,
-    season: String,
-    logo: String
-  },
+  // league: {
+  //   id: Number,
+  //   name: String,
+  //   type: String,
+  //   season: String,
+  //   logo: String
+  // },
   country: {
     id: Number,
     name: String,
