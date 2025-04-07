@@ -9,6 +9,7 @@ import { logger } from "./utils/logger"
 import { scheduleTeamUpdates, scheduleGameUpdates } from "./jobs/updateCronJob"
 import gameRouter from "./routes/fixtures/fixturesRoute"
 
+
 const app =express();
 
 //Configure the dotenv

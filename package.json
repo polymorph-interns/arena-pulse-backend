@@ -6,7 +6,9 @@
     "build": "tsc",
     "dev": "tsx watch src/server.ts"
   },
+  "type": "module",
   "dependencies": {
+    "@apollo/server": "^4.11.3",
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.1",
