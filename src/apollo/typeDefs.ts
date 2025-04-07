@@ -15,72 +15,79 @@ type Team {
 type TeamStats{
   teamId:ID!,
   leagueId: ID!,
-  season:String!
-  country: Country!
+  season:String
+  country: Country
+  team: Team!
   games: Games!
   points: Points!
-  updatedAt: String!
+  updatedAt: String
+}
+
+type Team {
+  id: ID!
+  name: String!
+  logo: String
 }
 
 
 type Games {
-played: Played!
-wins: Wins!
-loses: Loses!
+played: Played
+wins: Wins
+loses: Loses
 }
 type Played {
-  home: Int!
-  away: Int!
-  all: Int!
+  home: Int
+  away: Int
+  all: Int
 }
 type Wins {
-home: Home!
-away: Home!
-all: Home!
+home: Home
+away: Home
+all: Home
 }
 
 type Loses{
-home: Home!
-away: Home!
-all: Home!
+home: Home
+away: Home
+all: Home
 }
 
 
 type Home {
-  total: Int!
-  percentage: String!
+  total: Int
+  percentage: String
 }
 
 
 type Points{
-  for:For!
-  against: Against!
+  for:For
+  against: Against
 }
 type For{
-total: Total!
-average: Average!
+total: Total
+average: Average
 }
 
 type Against{
-total: Total!
-average:Average!
+total: Total
+average:Average
 }
 
 type Total {
-  home: Int!
-  away: Int!
-  all:Int!
+  home: Int
+  away: Int
+  all:Int
 }
 type Average {
-  home: Int!
-  away: Int!
-  all:Int!  
+  home: Float
+  away: Float
+  all:Float
 }
 type Country {
-  id:ID!,
-  name:String!,
-  code: String!,
-  flag:String!
+  id:Int,
+  name:String,
+  code: String,
+  flag:String
 }
 
 union StringOrNumber = WeekNumber | WeekString
@@ -146,13 +153,19 @@ type HomeOrAwayScores{
   season: String
   logo: String
  }
+ input TeamStatsInput {
+  teamId: ID!
+  leagueId: String
+  season: String
+}
+
 
 #General query type for GraphQl
 type Query{
     hello: String!
     teams: [Team!]!
     team(id: ID!): Team
-    teamStats(teamId: ID!): TeamStats
+    teamStats(teamId:ID!,leagueId: String, season: String): TeamStats
     fixtures(teamId:ID!,leagueId: String, season: String): [Fixtures!]
 }
 
