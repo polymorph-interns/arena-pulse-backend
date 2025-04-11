@@ -4,6 +4,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsc",
+    "test": "vitest",
     "dev": "cross-env NODE_ENV=development tsx watch src/server.ts"
   },
   "type": "module",
@@ -29,6 +30,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.13.14",
     "@types/node-cron": "^3.0.11",
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "vitest": "^3.1.1"
   }
 }
