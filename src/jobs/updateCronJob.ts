@@ -23,7 +23,8 @@ export function scheduleTeamUpdates(): void {
   // Update all teams weekly (Monday 3 AM ET)
   cron.schedule('0 3 * * 1', async () => {
     try {
-      const results = await updateAllTeams(CURRENT_SEASON, NBA_LEAGUE_ID);
+      // @ts-ignore
+      const results = await updateAllTeams(Team);
       logger.info(`Weekly update completed. Updated ${results.filter(r => r.success).length} teams`);
     } catch (error: any) {
       logger.error('Weekly team update failed:', error);

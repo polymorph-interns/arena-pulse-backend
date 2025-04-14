@@ -1,7 +1,8 @@
 import express,{Router} from 'express';
 import { Team } from '../../models/teamModel';
-import { updateAllTeams, getTeamWithStats } from '../../services/index';
+import { updateAllTeams, getTeamWithStats, updateTeamStats } from '../../services/index';
 import { NBA_LEAGUE_ID,CURRENT_SEASON } from '../../constants';
+import { fetchTeamsByLeague, fetchTeamStats, StatsResponse } from '../../apiClient';
 // import { getCurrentSeason } from '../../utils/seasonUtils';
 
 const teamRouter = Router();
@@ -55,7 +56,9 @@ teamRouter.get('/:id/stats', async (req, res) => {
 teamRouter.post('/update-teams', async (req, res) => {
   try {
     const { season = CURRENT_SEASON, league = NBA_LEAGUE_ID } = req.body;
-    const results = await updateAllTeams(season, league);
+    const teams = await fetchTeamsByLeague(league, season);
+
+    const results = await updateAllTeams(teams);
     
     res.json({
       success: true,
@@ -70,3 +73,33 @@ teamRouter.post('/update-teams', async (req, res) => {
   }
 });
 export default teamRouter;
+
+teamRouter.post("/update-team-stats", 
+  async (req, res) =>
+  {
+    try {
+      const { season = CURRENT_SEASON, league = NBA_LEAGUE_ID } = req.query;
+      const teams =  await Team.find().lean();
+      const statsResponses :Record<number, StatsResponse> = {}
+        for (const team of teams) {
+          // @ts-ignore
+          try {
+            const stats = await fetchTeamStats(Number(team.id), league as string, season as string)
+
+            statsResponses[team.id] = stats;
+          } catch (error) {
+            console.log(`Failed to fetch stats for team ${team.id}`)
+          }
+          
+      }
+      // @ts-ignore
+      const results = await updateTeamStats(league as string, season as string,teams, statsResponses, );
+      console.log(results)
+      res.json(results)
+    } catch (error) {
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+)

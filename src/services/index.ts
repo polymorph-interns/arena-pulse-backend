@@ -1,10 +1,11 @@
 import { Team } from "../models/teamModel";
-import { fetchGames, fetchTeamsByLeague, fetchTeamStats } from "../apiClient";
+import { fetchGames, fetchTeamsByLeague, fetchTeamStats, StatsResponse } from "../apiClient";
 import { UpSertTeam, UpsertTeamStats } from "../db";
 import { logger } from "../utils/logger";
 import { TeamResponse } from "../apiClient";
 import { CURRENT_SEASON, NBA_LEAGUE_ID } from "../constants";
 import Fixture from "../models/fixturesModel";
+import { stat } from "fs";
 
 export const getTeamWithStats = async (
   teamId: number,
@@ -39,55 +40,42 @@ export const getTeamWithStats = async (
   return { team, stats };
 };
 
+// 
+
 export const updateAllTeams = async (
-  season: string,
-  league: string = NBA_LEAGUE_ID
+  // season: string,
+  // league: string = NBA_LEAGUE_ID,
+  teams: TeamResponse[] = [] 
 ): Promise<
   {
     teamId: number;
     success: boolean;
     teamName?: string;
-    statsUpdated?: boolean;
     error?: string;
   }[]
 > => {
   try {
-    const teams = await fetchTeamsByLeague(league, season);
 
     if (teams.length === 0) {
       throw new Error(
-        `No teams found for league ${league} and season ${season}`
+        `No teams found `
       );
     }
 
     const results = [];
-    const teamIds: number[] = teams.map((team: TeamResponse) => team.id); // Extract IDs from response
+    // const teamIds: number[] = teams.map((team: TeamResponse) => team.id); // Extract IDs from response
 
     for (const team of teams) {
       try {
         const upsertedTeam = await UpSertTeam(team);
-        const statsResponse = await fetchTeamStats(team.id, league, season);
-
-        const stats = statsResponse
-          ? await UpsertTeamStats(
-              team.id,
-              Number(league),
-              season,
-              statsResponse
-            )
-          : null;
-
         results.push({
           teamId: team.id,
           success: true,
           teamName: team.name,
-          statsUpdated: stats !== null,
         });
 
-        console.log(`Updated team ${team.id} (${team.name})`);
+        console.log(`Updated team ${team.id} (${team.name} ${upsertedTeam})`);
 
-        // Rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {
         console.error(
           `Failed to update team ${team.id}:`,
@@ -105,6 +93,61 @@ export const updateAllTeams = async (
       teamId: number;
       success: boolean;
       teamName?: string;
+      error?: string;
+    }[];
+  } catch (error: any) {
+    logger.error("Failed to update teams:", error);
+    throw error;
+  }
+};
+
+export const updateTeamStats = async (
+  league: string = NBA_LEAGUE_ID,
+  season: string = CURRENT_SEASON,
+  teams:TeamResponse[]=[],
+  statsResponses:Record<number, StatsResponse> = {}
+): Promise<any> => {
+  try {
+    
+    const results = [];
+    let stats
+    for (const team of teams) {
+      try {
+        const statsResponse = statsResponses[team.id]
+         stats = await UpsertTeamStats(
+          team.id,
+          Number(league),
+          season, 
+          statsResponse
+        )
+        results.push({
+          teamId: team.id,
+          success: true,
+          teamName: team.name,
+          statsUpdated: stats !== null,
+        });
+        console.log(`Stats for team ${team.id} (${team.name}) updated successfully`);
+
+        console.log(`Updated stats for  team ${team.id} (${team.name})`)
+          
+      } catch (error) {
+        console.error(
+          `Failed to update team ${team.id}:`,
+          error instanceof Error ? error.message : "Unknown error"
+        );
+        results.push({
+          teamId: team.id,
+          success: false,
+          stats: statsResponses,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    
+    }
+    return results as {
+      teamId: number;
+      success: boolean;
+      teamName?: string;
       statsUpdated?: boolean;
       error?: string;
     }[];
@@ -112,6 +155,7 @@ export const updateAllTeams = async (
     logger.error("Failed to update teams:", error);
     throw error;
   }
+
 };
 
 export const updateTeamGames = async (

@@ -19,7 +19,7 @@ export const UpsertTeamStats = async (
   ).lean();
 };
 
-export const getCurrentSeason = (): string => {
-  const currentYear = new Date().getFullYear();
-  return `${currentYear - 1}-${currentYear}`;
-};
+// export const getCurrentSeason = (): string => {
+//   const currentYear = new Date().getFullYear();
+//   return `${currentYear - 1}-${currentYear}`;
+// };
