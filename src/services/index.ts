@@ -5,7 +5,7 @@ import { logger } from "../utils/logger";
 import { TeamResponse } from "../apiClient";
 import { CURRENT_SEASON, NBA_LEAGUE_ID } from "../constants";
 import Fixture from "../models/fixturesModel";
-import { stat } from "fs";
+import { stat, Stats } from "fs";
 
 export const getTeamWithStats = async (
   teamId: number,
@@ -148,7 +148,7 @@ export const updateTeamStats = async (
       teamId: number;
       success: boolean;
       teamName?: string;
-      statsUpdated?: boolean;
+      statsUpdated?: boolean; 
       error?: string;
     }[];
   } catch (error: any) {
