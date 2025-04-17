@@ -1,11 +1,11 @@
 // src/routes/gameRoutes.ts
 
 import express, {Request,Response} from 'express';
-import { getGamesByTeam } from '../../controllers/games/gameController';
-const gameRouter = express.Router();
+import { getFixturesByTeam } from '../../controllers/games/gameController';
+const fixtureRouter = express.Router();
 
-gameRouter.get('/team/:teamId', getGamesByTeam);
+fixtureRouter.get('/team/:teamId', getFixturesByTeam);
 
 
 
-export default gameRouter;
+export default fixtureRouter;

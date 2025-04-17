@@ -1,15 +1,15 @@
 // src/controllers/gameController.ts
 
 import { Request, Response } from 'express';
-import { getTeamGames } from '../../services/index';
+import { getTeamFixtures } from '../../services/index';
 import { logger } from '../../utils/logger';
 
-export const getGamesByTeam = async (req: Request, res: Response) => {
+export const getFixturesByTeam = async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
     const { leagueId, season } = req.query;
     
-    const games = await getTeamGames(
+    const games = await getTeamFixtures(
       Number(teamId),
       leagueId ? Number(leagueId) : undefined,
       season ? String(season) : undefined

@@ -7,8 +7,9 @@ import { fetchTeamsByLeague, fetchTeamStats } from '../apiClient';
 import { UpSertTeam, UpsertTeamStats } from '../db';
 import { NBA_LEAGUE_ID, CURRENT_SEASON } from '../constants';
 import { Team } from '../models/teamModel';
-import {updateTeamGames} from "../services/"
+import {updateTeamFixtures} from "../services/"
 import Fixture from "../models/fixturesModel"
+import { fetchGames } from '../apiClient';
 
 interface Team {
   id: number;
@@ -99,7 +100,16 @@ export function scheduleGameUpdates(): void {
       
       for (const teamId of teams) {
         try {
-          const updatedGames = await updateTeamGames(teamId);
+         
+              const fixtures = await fetchGames(teamId);
+          
+              console.log("Raw API response:", JSON.stringify(fixtures, null, 2)); 
+          
+              if (!fixtures || fixtures.length === 0) {
+                logger.info(`No games found for team ${teamId}`);
+                return [];
+              }
+          const updatedGames = await updateTeamFixtures(teamId, fixtures);
           results.push({
             teamId,
             success: true,
@@ -145,11 +155,11 @@ export function scheduleGameUpdates(): void {
       for (const teamId of uniqueTeamIds) {
         try {
             // @ts-ignore
-          const updatedGames = await updateTeamGames(teamId);
+          const updatedFixtures = await updateTeamFixtures(teamId);
           results.push({
             teamId,
             success: true,
-            gamesUpdated: updatedGames.length
+            gamesUpdated: updatedFixtures.length
           });
         } catch (error) {
           results.push({

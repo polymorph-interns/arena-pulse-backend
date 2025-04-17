@@ -2,7 +2,7 @@ import { Response } from "express";
 import { Team } from "../models/teamModel";
 import { getTeamWithStats } from "../services";
 import { NBA_LEAGUE_ID, CURRENT_SEASON } from "../constants";
-import { getTeamGames } from "../services";
+import { getTeamFixtures } from "../services";
 import { parseArgs } from "util";
 
 export const resolvers = {
@@ -85,7 +85,7 @@ export const resolvers = {
     },
     async fixtures(_:any, args:any, info:any, context:any){
         const {teamId, leagueId, season} = args;
-        const games = await getTeamGames(
+        const games = await getTeamFixtures(
           Number(teamId),
           leagueId ? Number(leagueId) : undefined,
           season ? String(season) : undefined

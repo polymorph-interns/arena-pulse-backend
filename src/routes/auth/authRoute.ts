@@ -10,10 +10,11 @@ authRouter.post("/create-account", async(req:Request, res:Response)=>
 {
   const {firstName, lastName, email,password} = req.body;
   try {
-    const userData = await authController.createAccount(firstName, lastName, email, password);
+    const userData = await authController.createAccount({firstName, lastName, email, password});
     res.status(201).json({message:"Account successflly created", data: userData})
     
   } catch (error:any) {
+    // console.log(error)
    res.status(400).json({message: error.message}) 
   }
 })
@@ -22,10 +23,17 @@ authRouter.post("/create-account", async(req:Request, res:Response)=>
 authRouter.post("/login", async(req:Request, res:Response)=>
 {
   const {email, password} = req.body;
+  if(!email || !password)
+  {
+   throw Error("Email and password are required")
+  }
   try {
-    const token = await authController.logUserIn(email, password);
+    const token = await authController.logUserIn({email, password});
+    // console.log(email, password)
+    // console.log(token)
     res.status(200).json({message:"Login successful", token})
   } catch (error:any) {
+    // console.log(error)
     res.status(400).json({message: error.message})
   }
 })

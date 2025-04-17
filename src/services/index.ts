@@ -124,12 +124,13 @@ export const updateTeamStats = async (
           teamId: team.id,
           success: true,
           teamName: team.name,
+          stats:stats,
           statsUpdated: stats !== null,
         });
         console.log(`Stats for team ${team.id} (${team.name}) updated successfully`);
 
         console.log(`Updated stats for  team ${team.id} (${team.name})`)
-          
+        console.log(results)  
       } catch (error) {
         console.error(
           `Failed to update team ${team.id}:`,
@@ -158,22 +159,12 @@ export const updateTeamStats = async (
 
 };
 
-export const updateTeamGames = async (
-  teamId: number
-  // leagueId: string | number = NBA_LEAGUE_ID,
-  // season: string = CURRENT_SEASON,
-  // timezone: string = "America/New_York"
+export const updateTeamFixtures = async (
+  teamId: number,
+  games: any
 ) => {
   try {
-    logger.info(`Fetching games for team ${teamId}`);
-    const games = await fetchGames(teamId);
-
-    console.log("Raw API response:", JSON.stringify(games, null, 2)); // Add this line
-
-    if (!games || games.length === 0) {
-      logger.info(`No games found for team ${teamId}`);
-      return [];
-    }
+    
     // @ts-ignore
     const updatePromises = games.map((game) =>
       Fixture.findOneAndUpdate({ id: game.id }, game, {
@@ -182,9 +173,9 @@ export const updateTeamGames = async (
       }).lean()
     );
 
-    const updatedGames = await Promise.all(updatePromises);
-    logger.info(`Updated ${updatedGames.length} games for team ${teamId}`);
-    return updatedGames;
+    const updatedFixtures = await Promise.all(updatePromises);
+    logger.info(`Updated ${updatedFixtures.length} games for team ${teamId}`);
+    return updatedFixtures;
   } catch (error: any) {
     logger.error(`Error updating games for team ${teamId}`, {
       error: error.message,
@@ -194,7 +185,7 @@ export const updateTeamGames = async (
   }
 };
 
-export const getTeamGames = async (
+export const getTeamFixtures = async (
   teamId: number,
   leagueId: string | number = NBA_LEAGUE_ID,
   season: string = CURRENT_SEASON

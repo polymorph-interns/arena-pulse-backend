@@ -1,6 +1,10 @@
 import axios, { AxiosInstance } from "axios";
 import { logger } from "./utils/logger";
 import { NBA_LEAGUE_ID,CURRENT_SEASON } from "./constants";
+import dotenv from "dotenv"
+
+
+dotenv.config();
 
 type ApiResponse<T> = {
   get: string;
@@ -197,13 +201,13 @@ export const fetchGames = async (
     const response = await axios.get('https://v1.basketball.api-sports.io/games', {
       headers: {
         "x-rapidapi-host": "v1.basketball.api-sports.io",
-        "x-rapidapi-key": process.env.BASKETBALL_API_KEY
+        "x-rapidapi-key":process.env.BASKETBALL_API_KEY
       },
       params: {
         team: teamId,
         league: leagueId,
         season: season,
-        timezone: timezone  // Note lowercase 'z'
+        timezone: timezone  
       }
     });
     
@@ -211,9 +215,10 @@ export const fetchGames = async (
     logger.info('Games API response', {
       url: response.config.url,
       params: response.config.params,
-      dataCount: response.data.response?.length || 0
+      dataCount: response.data.response?.length || 0,
+      response : response.data
     });
-    
+    console.log(response.data.response)
     return response.data.response;
   } catch (error: any) {
     logger.error("Error fetching games", {

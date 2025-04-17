@@ -5,8 +5,24 @@ import bcrypt from "bcrypt"
 
 
 export const authController= {
-  createAccount :async(firstName:string, lastName:string, email:string, password:string)=>
+  createAccount :async({firstName,lastName,email,password}:{firstName:string, lastName:string, email:string, password:string})=>
   {
+    if(!firstName)
+    {
+      throw new Error("First name is required")
+    }
+    if(!lastName)
+    {
+      throw new Error("Last name is required")
+    }
+    if(!email)
+    {
+      throw new Error("Email is required")
+    }
+    if(!password)
+    {
+      throw new Error("Password is required")
+    }
    try{
     const emailExists = await User.findOne({email})
     if(emailExists)
@@ -18,24 +34,30 @@ export const authController= {
       firstName,
       lastName,
       email,
-     password: hashedPassword
+      password:hashedPassword
     })
-    newUser.save();
+    // console.log(firstName,lastName,email,password)
+    await newUser.save();
     const token = jwtUtils.generateToken(newUser._id as unknown as string)
+    // console.log(token)
     return {token, user: {firstName: newUser.firstName, lastName: newUser.lastName, email: newUser.email}}
    }
    catch(err:any){
+    console.log({err})
     throw new Error(`Failed to create an account. Please try again.`)
    }
 },
 
-logUserIn:async(email:string, password:string)=>
+logUserIn:async({email, password}:{email:string, password:string})=>
 {
   try {
+    if(!email || !password){
+      throw new Error("Email and password are required");
+    }
     const user = await User.findOne({email})
     if(!user)
     {
-      throw new Error("user not found")
+      throw new Error("User not found")
     }
     const isPasswordValid = await bcrypt.compare(password,user.password)
     if(!isPasswordValid)
@@ -45,7 +67,8 @@ logUserIn:async(email:string, password:string)=>
     const token = jwtUtils.generateToken(user._id as unknown as string)
       return {token, user: {firstName: user?.firstName, lastName: user?.lastName, email: user?.email}}
   } catch (error:any) {
-    throw new Error(`An error occured while logging in: ${error.message}`)
+    throw new Error(`An error occured while logging in`)
+    // console.log(error)
   }
 },
 

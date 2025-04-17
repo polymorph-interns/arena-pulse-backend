@@ -4,7 +4,7 @@ import { ObjectId } from "mongoose";
 export const jwtUtils = {
  generateToken:(userId:string):string =>
  {
-    return jwt.sign({userId}, process.env.JWT_SECRET as string, {expiresIn: "1h"});
+    return jwt.sign({userId}, process.env.JWT_SECRET as string || "abcdef", {expiresIn: "1h"});
  },
 
  verifyToken:(token:string)=>
